@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coimbatore Bus Routes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .bus-route {
+            margin-bottom: 20px;
+        }
+
+        .route-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .route-timings {
+            margin-top: 5px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Coimbatore Bus Routes and Timings</h1>
+        <div id="bus-routes"></div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const busRoutes = [
+                { name: "Route 1: City Center to Gandhipuram", timings: ["8:00 AM", "9:30 AM", "11:00 AM"] },
+                { name: "Route 2: Gandhipuram to Peelamedu", timings: ["7:45 AM", "10:15 AM", "1:00 PM"] },
+                { name: "Route 3: Peelamedu to RS Puram", timings: ["7:15 AM", "8:45 AM", "10:30 AM"] },
+                { name: "Route 4: RS Puram to Coimbatore Airport", timings: ["9:00 AM", "11:00 AM", "2:00 PM"] },
+                { name: "Route 5: Gandhipuram to Singanallur", timings: ["8:30 AM", "10:00 AM", "12:00 PM"] },
+                { name: "Route 6: Singanallur to Ondipudur", timings: ["7:00 AM", "8:30 AM", "10:15 AM"] },
+                { name: "Route 7: Ondipudur to Ganapathy", timings: ["9:30 AM", "11:15 AM", "1:00 PM"] },
+                { name: "Route 8: Gandhipuram to Saravanampatti", timings: ["7:45 AM", "9:30 AM", "11:30 AM"] },
+                { name: "Route 9: Saravanampatti to Vadavalli", timings: ["8:00 AM", "10:00 AM", "12:00 PM"] },
+                { name: "Route 10: Vadavalli to Thudiyalur", timings: ["8:30 AM", "10:30 AM", "12:30 PM"] }
+            ];
+
+            const busRoutesContainer = document.getElementById("bus-routes");
+
+            busRoutes.forEach(route => {
+                const routeDiv = document.createElement("div");
+                routeDiv.classList.add("bus-route");
+
+                const routeName = document.createElement("div");
+                routeName.classList.add("route-name");
+                routeName.textContent = route.name;
+
+                const routeTimings = document.createElement("div");
+                routeTimings.classList.add("route-timings");
+                routeTimings.textContent = "Timings: " + route.timings.join(", ");
+
+                routeDiv.appendChild(routeName);
+                routeDiv.appendChild(routeTimings);
+                busRoutesContainer.appendChild(routeDiv);
+            });
+        });
+    </script>
+</body>
+</html>

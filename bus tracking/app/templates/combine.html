@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Location Finder</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#map {
+    height: 400px;
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+</style>
+</head>
+<body>
+
+    <div class="container">
+        <form id="locationForm" action="{{ url_for('bus_routes') }}" method="GET"> <!-- Change the action attribute to submit to the bus_routes route -->
+            <label for="startLocation">Start Location:</label>
+            <input type="text" id="startLocation" name="startLocation" placeholder="Enter start location..." required>
+            <label for="endLocation">End Location:</label>
+            <input type="text" id="endLocation" name="endLocation" placeholder="Enter end location..." required>
+            
+            <button type="submit">Find Route</button>
+        </form>
+    
+        <div id="map"></div>
+    </div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+var map = L.map('map').setView([51.505, -0.09], 13); // Default center
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+var directionsControl = L.Routing.control({
+    waypoints: [],
+    routeWhileDragging: true,
+    geocoder: L.Control.Geocoder.nominatim(),
+    router: L.Routing.osrmv1({
+        serviceUrl: 'https://router.project-osrm.org/route/v1'
+    })
+}).addTo(map);
+
+document.getElementById('locationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var start = document.getElementById('startLocation').value;
+    var end = document.getElementById('endLocation').value;
+
+    directionsControl.setWaypoints([
+        L.latLng(start),
+        L.latLng(end)
+    ]);
+});
+</script>
+</body>
+</html>

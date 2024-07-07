@@ -1,0 +1,155 @@
+from flask import Flask,jsonify, render_template, request, redirect, session, url_for
+from flask_pymongo import PyMongo
+import bcrypt
+from pymongo import MongoClient
+from datetime import datetime
+from config import SECRET_KEY
+from bson import ObjectId
+
+app = Flask(__name__)
+app.secret_key = SECRET_KEY
+
+# MongoDB Configuration
+client = MongoClient('mongodb://localhost:27017/')
+db = client['mydb']
+users_collection = db['login']
+bookings_collection = db['bookings']
+economy_cars_collection = db['economy_cars']
+compact_cars_collection = db['compact_cars']
+fullsize_cars_collection = db['fullsize_cars']
+cars_collection = db["cars"]
+
+@app.route("/add_car_to_db", methods=["POST"])
+def add_car_to_db():
+    data = request.json
+    car_name = data["carName"]
+    rent_per_day = data["rentPerDay"]
+
+    # Insert the car data into the MongoDB collection
+    cars_collection.insert_one({
+        "carName": car_name,
+        "rentPerDay": rent_per_day
+    })
+
+    return jsonify({"message": "Car data added successfully"})
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password'].encode('utf-8')
+        email = request.form['email']
+
+        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+        users_collection.insert_one({'username': username, 'password': hashed_password, 'email': email})
+
+        return redirect(url_for('index'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password'].encode('utf-8')
+
+        user = users_collection.find_one({'email': email})
+
+        if user and bcrypt.checkpw(password, user['password']):
+            session['logged_in'] = True
+            session['email'] = email
+            return redirect(url_for('index'))
+
+        error = 'Invalid email or password. Please try again.'
+        return render_template('login.html', error=error)
+    return render_template('login.html')
+
+@app.route('/services')
+def services():
+    return render_template('services.html')
+
+# @app.route('/compact')
+# def compact():
+#     compact_cars = compact_cars_collection.find()
+#     return render_template('compact.html', compact_cars=compact_cars)
+
+@app.route('/economy')
+def economy():
+    economy_cars = economy_cars_collection.find()
+    return render_template('economy.html', economy_cars=economy_cars)
+
+@app.route('/fullsize')
+def fullsize():
+    fullsize_cars = fullsize_cars_collection.find()
+    return render_template('fullsize.html', fullsize_cars=fullsize_cars)
+
+@app.route('/luxury')
+def luxury():
+    return render_template('luxury.html')
+
+@app.route('/mediumsize')
+def mediumsize():
+    return render_template('mediumsize.html')
+
+@app.route('/suv')
+def suv():
+    return render_template('suv.html')
+
+@app.route('/booking', methods=['GET', 'POST'])
+def booking():
+    if request.method == 'POST':
+        car_type = request.form['carType']
+        pickup_date = datetime.strptime(request.form['pickupDate'], '%Y-%m-%d')
+        return_date = datetime.strptime(request.form['returnDate'], '%Y-%m-%d')
+
+        # Calculate the number of days for the booking
+        num_days = (return_date - pickup_date).days
+
+        # Retrieve the rate for the selected car type from the database
+        car = db[car_type].find_one()  # Assuming each car type has its own collection
+        rate_per_day = car['rent_per_day']
+
+        # Calculate the total amount for the booking
+        total_amount = num_days * rate_per_day
+
+        # Save the booking data to MongoDB
+        booking_data = {
+            'car_type': car_type,
+            'pickup_date': pickup_date,
+            'return_date': return_date,
+            'total_amount': total_amount
+        }
+        bookings_collection.insert_one(booking_data)
+
+        # Redirect to the confirmation page or wherever you want
+        return redirect(url_for('confirmation', booking_id=str(booking_data['_id'])))
+
+    # If it's a GET request, render the booking form
+    return render_template('booking.html')
+@app.route('/compact', methods=['GET', 'POST'])
+def compact():
+    if request.method == 'POST':
+        car_name = request.form['car_name']
+        rent_per_day = request.form['rent_per_day']
+        mongo.db.compact_cars.insert_one({'car_name': car_name, 'rent_per_day': rent_per_day})
+        return redirect(url_for('compact'))  # Redirect to the compact cars page after form submission
+    compact_cars = mongo.db.compact_cars.find()
+    return render_template('compact.html', compact_cars=compact_cars)
+
+@app.route('/terms')
+def terms():
+    # Render the terms page template
+    return render_template('terms.html')
+
+
+@app.route('/confirmation')
+def confirmation():
+    # Retrieve booking details from MongoDB or process as needed
+    return render_template('confirmation.html')
+
+
+if __name__ == '__main__':
+    app.run(debug=True) 
